@@ -61,6 +61,9 @@ public class GameManager : MonoBehaviour
 
     private Button _playBtnP1;
     private Button _playBtnP2;
+
+    //Added Code
+    public WalletData Wallet;
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
@@ -89,6 +92,9 @@ public class GameManager : MonoBehaviour
         OnScoreChanged += ScoreChanged;
         _playingCards = _playingCardsSO.PlayingCardsDict;
         _backgrounds = _playingCardsSO.Backgrounds;
+
+        //Added Code
+        Wallet = new WalletData(1000);
     }
     
     private void OnSceneLoaded(Scene scene,LoadSceneMode mode)
