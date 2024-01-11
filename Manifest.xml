@@ -1,0 +1,25 @@
+<store>
+	<item>
+		<id>0</id>
+		<description>Background Pattern I</description>
+		<price>300</price>
+		<previewImageURL>Low Quality/Background Pattern 1.jpg</previewImageURL>
+		<backgroundImageURL>High Quality/Background Pattern 1.jpg</backgroundImageURL>
+	</item>
+
+	<item>
+		<id>1</id>
+		<description>Background Pattern II</description>
+		<price>350</price>
+		<previewImageURL>Low Quality/Background Pattern 2.jpg</previewImageURL>
+		<backgroundImageURL>High Quality/Background Pattern 2.jpg</backgroundImageURL>
+	</item>
+
+	<item>
+		<id>2</id>
+		<description>Background Pattern III</description>
+		<price>400</price>
+		<previewImageURL>Low Quality/Background Pattern 3.jpg</previewImageURL>
+		<backgroundImageURL>High Quality/Background Pattern 3.jpg</backgroundImageURL>
+	</item>
+</store>

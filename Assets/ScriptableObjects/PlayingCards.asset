@@ -65,4 +65,5 @@ MonoBehaviour:
   - {fileID: 8017095965791180941, guid: 7c4e94b992de4ce4d9d1414222088af8, type: 3}
   - {fileID: 973126801939583721, guid: 26444efaf7a11dc49b7164a7b180cec9, type: 3}
   - {fileID: 1969986926114890988, guid: 4275f8da6c579254c89343cb32120c4d, type: 3}
-  backgrounds: []
+  backgrounds:
+  - {fileID: 2800000, guid: 35b1aa564e0affa44b391cd24c36727c, type: 3}
