@@ -66,7 +66,15 @@ public class GameManager : MonoBehaviour
     //Added Code
     public WalletData Wallet;
 
-    public Texture2D ActiveBackground { set => backgroundMaterial.mainTexture = value; }
+    //Added Code
+    public Texture2D ActiveBackground
+    {
+        set
+        {
+            backgroundMaterial.mainTexture = value;
+            backgroundMaterial.color = Color.white;
+        }
+    }
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
