@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -75,6 +76,9 @@ public class GameManager : MonoBehaviour
             backgroundMaterial.color = Color.white;
         }
     }
+
+    //Added Code
+    private NetworkManager networkManager;
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
@@ -106,6 +110,21 @@ public class GameManager : MonoBehaviour
 
         //Added Code
         Wallet = new WalletData(1000);
+        networkManager = FindAnyObjectByType<NetworkManager>();
+    }
+
+    private IEnumerator CheckPlayerCount() {
+        while (true)
+        {
+            if (networkManager.ConnectedClientsList.Count == 2)
+            {
+                networkManager.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                break;
+            }
+                
+
+            yield return new WaitForEndOfFrame();
+        }
     }
     
     private void OnSceneLoaded(Scene scene,LoadSceneMode mode)
@@ -115,8 +134,18 @@ public class GameManager : MonoBehaviour
             case "WelcomeScene":
                 GameObject.Find("StoreBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("StoreScene"));
                 //Change these for multiplayer
-                GameObject.Find("HostBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("GameScene"));
-                GameObject.Find("JoinBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("GameScene"));
+                GameObject.Find("HostBtn").GetComponent<Button>().onClick.AddListener(() => {
+                    //Added Code
+                    networkManager.StartHost();
+                    
+                    StartCoroutine(CheckPlayerCount());
+                });
+                GameObject.Find("JoinBtn").GetComponent<Button>().onClick.AddListener(()=> {
+                    //Added Code
+                    networkManager.StartClient();
+
+                    //SceneManager.LoadSceneAsync("GameScene");
+                });
                 break;
             case "GameScene":
                 _playBtnP1 = GameObject.Find("PlayBtnP1").GetComponent<Button>();
