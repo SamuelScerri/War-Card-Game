@@ -13,9 +13,23 @@ public class DLCStore : MonoBehaviour
 {
     [SerializeField]
     private TextMeshProUGUI coinCounter;
+
+    [SerializeField]
+    private Transform grid;
+
+    [SerializeField]
+    private GameObject DLCItemPrefab;
+
     public int CoinCounter { set => coinCounter.SetText(value.ToString()); }
 
     [SerializeField] private List<Asset> assets;
+    public List<Asset> Assets { get => assets; }
+
+    private void CreateDLCItem(Asset asset)
+    {
+        DLCItem newItem = Instantiate(DLCItemPrefab, grid).GetComponent<DLCItem>();
+        newItem.AssetData = asset;
+    }
 
     private void Awake()
     {
@@ -28,12 +42,23 @@ public class DLCStore : MonoBehaviour
             manifest.Load(data);
 
             foreach(XmlNode itemNode in manifest.SelectNodes("/store/item")) {
-                Asset newAsset = new Asset(0, "Test", 300);
+                Asset newAsset = new Asset(
+                    Int32.Parse(itemNode.SelectSingleNode("id").InnerText),
+                    itemNode.SelectSingleNode("description").InnerText,
+                    Int32.Parse(itemNode.SelectSingleNode("price").InnerText));
+                
+                newAsset.OnBuy = delegate() {
+                    CoinCounter = GameManager.Singleton.Wallet.Coins;
+                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image);
+                };
+
                 assets.Add(newAsset);
 
                 if (!newAsset.Owned)
                     DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("previewImageURL").InnerText), newAsset.Image);
                 else DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image);
+
+                CreateDLCItem(newAsset);
             }
         });
     }

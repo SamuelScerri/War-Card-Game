@@ -1,8 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
-[Serializable]
 public class Asset
 {
     public int ID { get; }
@@ -10,6 +8,8 @@ public class Asset
     public int Price { get; }
     public Texture2D Image;
     public bool Owned;
+
+    public Action OnBuy;
 
     public Asset(int id, string description, int price)
     {
@@ -20,12 +20,21 @@ public class Asset
         Owned = PlayerPrefs.HasKey("DLC" + id);
     }
 
-    public void Buy()
+    public bool BuyOrEquip()
     {
-        if (GameManager.Singleton.Wallet.Coins > Price)
+        if (Owned)
+            return true;
+
+        else if (GameManager.Singleton.Wallet.Coins > Price)
         {
             GameManager.Singleton.Wallet.Coins -= Price;
             PlayerPrefs.SetString("DLC" + ID, Description);
+            
+            OnBuy.Invoke();
+
+            return true;
         }
+
+        else return false;
     }
 }
