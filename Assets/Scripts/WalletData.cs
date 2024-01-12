@@ -2,9 +2,16 @@ using UnityEngine;
 
 public struct WalletData
 {
-    public int Coins;
+    private int defaultAmount;
 
-    public WalletData(int defaultAmount) {
-        Coins = PlayerPrefs.GetInt("Coins", defaultAmount);
+    public int Coins
+    {
+        get => PlayerPrefs.GetInt("Coins", defaultAmount);
+        set => PlayerPrefs.SetInt("Coins", value);
+    }
+
+    public WalletData(int amount)
+    {
+        defaultAmount = amount;
     }
 }

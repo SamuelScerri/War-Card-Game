@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -14,59 +15,57 @@ public class DLCStore : MonoBehaviour
     private TextMeshProUGUI coinCounter;
     public int CoinCounter { set => coinCounter.SetText(value.ToString()); }
 
-    private List<Asset> assets;
+    [SerializeField] private List<Asset> assets;
 
     private void Awake()
     {
-        //CoinCounter = GameManager.Singleton.Wallet.Coins;
-
+        CoinCounter = GameManager.Singleton.Wallet.Coins;
         assets = new List<Asset>();
 
         FirebaseStorage storage = FirebaseStorage.DefaultInstance;
-        DownloadManifest(storage.GetReference("Manifest.xml"), node => {
-            print("Creating Node");
+        DownloadFile(storage.GetReference("Manifest.xml"), true, null, data => {
+            XmlDocument manifest = new XmlDocument();
+            manifest.Load(data);
 
-            Asset loadedAsset = new Asset(0, "Test", 300);
-            //print(node.SelectSingleNode("backgroundImageURL").InnerText);
+            foreach(XmlNode itemNode in manifest.SelectNodes("/store/item")) {
+                Asset newAsset = new Asset(0, "Test", 300);
+                assets.Add(newAsset);
 
-            DownloadTexture(storage.GetReference("Manifest.xml"));
-
-            assets.Add(loadedAsset);
-        });
-    }
-
-    private void DownloadTexture(StorageReference reference)
-    {
-        print("Preparing To Download");
-        string localUrl = Application.persistentDataPath + "/test.xml";
-
-        Task task = reference.GetFileAsync(localUrl, 
-            new StorageProgress<DownloadState>(state => {
-                Debug.Log("Downloading Texture: " + state.BytesTransferred);
-            }), CancellationToken.None);
-
-        task.ContinueWithOnMainThread(resultTask => {
-            if (!resultTask.IsFaulted && !resultTask.IsCanceled) {
-                Debug.Log("Complete");
-                //Debug.LogException(resultTask.Exception);
-                //ImageConversion.LoadImage(texture, File.ReadAllBytes(Application.persistentDataPath + reference.Path));
+                if (!newAsset.Owned)
+                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("previewImageURL").InnerText), newAsset.Image);
+                else DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image);
             }
         });
     }
 
-    private void DownloadManifest(StorageReference reference, Action<XmlNode> onComplete)
+    //Downloads a File, if it already exists there is no need to re-download it again
+    private void DownloadFile(StorageReference reference, bool forceDownload, Action<DownloadState> onDownload, Action<string> onComplete)
     {
-        XmlDocument manifest = new XmlDocument();
+        string localUrl = Application.persistentDataPath + reference.Path;
 
-        reference.GetStreamAsync(stream => {
-            manifest.Load(stream);
-            print("Loaded Manifest");
+        if (!Directory.Exists(Path.GetDirectoryName(localUrl)))
+            Directory.CreateDirectory(Path.GetDirectoryName(localUrl));
+        
+        if (forceDownload || !File.Exists(localUrl))
+        {
+            Task task = reference.GetFileAsync(localUrl, 
+                new StorageProgress<DownloadState>(state => {
+                    onDownload.Invoke(state);
+                }), CancellationToken.None);
 
-            if (stream.CanRead)
-                onComplete.Invoke(manifest.SelectNodes("/store/item")[0]);
+            task.ContinueWithOnMainThread(resultTask => {
+                if (!resultTask.IsFaulted && !resultTask.IsCanceled)
+                    onComplete.Invoke(localUrl);
+            });
+        }
 
-            //foreach(XmlNode itemNode in manifest.SelectNodes("/store/item"))
-                //onComplete.Invoke(itemNode);
-        }, null, CancellationToken.None);
+        else
+            onComplete.Invoke(localUrl);
+    }
+
+    private void DownloadTexture(StorageReference reference, Texture2D texture) {
+        DownloadFile(reference, false, state => {
+            print("Downloading Texture: " + state.BytesTransferred);
+        }, data => texture.LoadImage(File.ReadAllBytes(data)));
     }
 }
