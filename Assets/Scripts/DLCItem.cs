@@ -11,8 +11,32 @@ public class DLCItem : MonoBehaviour
 	[SerializeField]
 	private RawImage itemImage;
 
+	[SerializeField]
+	private Slider progressBar;
+
 	private Asset assetData;
 	public Action OnBuy;
+
+	public int Progress
+	{
+		set
+		{
+			progressBar.value = value;
+			
+			if (progressBar.value >= 1)
+			{
+				progressBar.gameObject.SetActive(false);
+				itemImage.color = new Color(1, 1, 1, 1);
+			}
+				
+			else
+			{
+				progressBar.gameObject.SetActive(true);
+				itemImage.color = new Color(1, 1, 1, 0);
+			}
+				
+		}
+	}
 
 	public Asset AssetData
 	{

@@ -8,6 +8,7 @@ using Firebase.Extensions;
 using Firebase.Storage;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DLCStore : MonoBehaviour
 {
@@ -25,10 +26,12 @@ public class DLCStore : MonoBehaviour
     [SerializeField] private List<Asset> assets;
     public List<Asset> Assets { get => assets; }
 
-    private void CreateDLCItem(Asset asset)
+    private DLCItem CreateDLCItem(Asset asset)
     {
         DLCItem newItem = Instantiate(DLCItemPrefab, grid).GetComponent<DLCItem>();
         newItem.AssetData = asset;
+
+        return newItem;
     }
 
     private void Awake()
@@ -46,19 +49,19 @@ public class DLCStore : MonoBehaviour
                     Int32.Parse(itemNode.SelectSingleNode("id").InnerText),
                     itemNode.SelectSingleNode("description").InnerText,
                     Int32.Parse(itemNode.SelectSingleNode("price").InnerText));
-                
-                newAsset.OnBuy = delegate() {
-                    CoinCounter = GameManager.Singleton.Wallet.Coins;
-                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image);
-                };
 
+                DLCItem newItem = CreateDLCItem(newAsset);
+                
                 assets.Add(newAsset);
 
                 if (!newAsset.Owned)
-                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("previewImageURL").InnerText), newAsset.Image);
-                else DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image);
+                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("previewImageURL").InnerText), newAsset.Image, newItem);
+                else DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image, newItem);
 
-                CreateDLCItem(newAsset);
+                newAsset.OnBuy = delegate() {
+                    CoinCounter = GameManager.Singleton.Wallet.Coins;
+                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image, newItem);
+                };
             }
         });
     }
@@ -88,9 +91,13 @@ public class DLCStore : MonoBehaviour
             onComplete.Invoke(localUrl);
     }
 
-    private void DownloadTexture(StorageReference reference, Texture2D texture) {
+    private void DownloadTexture(StorageReference reference, Texture2D texture, DLCItem item) {
         DownloadFile(reference, false, state => {
-            print("Downloading Texture: " + state.BytesTransferred);
-        }, data => texture.LoadImage(File.ReadAllBytes(data)));
+            if (state.BytesTransferred != 0)
+                item.Progress = (int)(state.TotalByteCount / state.BytesTransferred);
+        }, data => {
+            item.Progress = 1;
+            texture.LoadImage(File.ReadAllBytes(data));
+        });
     }
 }
