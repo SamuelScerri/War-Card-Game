@@ -8,6 +8,7 @@ using Firebase.Extensions;
 using Firebase.Storage;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class DLCStore : MonoBehaviour
@@ -92,15 +93,14 @@ public class DLCStore : MonoBehaviour
     }
 
     private void DownloadTexture(StorageReference reference, Texture2D texture, DLCItem item) {
-        DownloadFile(reference, false, state => {
-            if (state.BytesTransferred != 0) {
-                item.Progress = state.BytesTransferred / state.TotalByteCount;
-                print(state.BytesTransferred / state.TotalByteCount);
-            }
-                
-        }, data => {
+        DownloadFile(reference, false, state => item.Progress = (float)state.BytesTransferred / state.TotalByteCount, data => {
             item.Progress = 1;
             texture.LoadImage(File.ReadAllBytes(data));
         });
+    }
+
+    public void GoBack()
+    {
+        SceneManager.LoadSceneAsync("WelcomeScene");
     }
 }

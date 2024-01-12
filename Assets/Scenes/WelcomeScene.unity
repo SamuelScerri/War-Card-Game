@@ -278,6 +278,7 @@ MonoBehaviour:
   maximumScore: 2
   animationDuration: 2
   roundTransitionDuration: 2
+  backgroundMaterial: {fileID: 2100000, guid: b2803157f955e57448ceb44537bdd223, type: 2}
 --- !u!4 &124804485
 Transform:
   m_ObjectHideFlags: 0

@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int maximumScore = 5;
     [SerializeField] private float animationDuration = 2f;
     [SerializeField] private float roundTransitionDuration = 2f;
+    [SerializeField] private Material backgroundMaterial;
     private Dictionary<string, GameObject> _playingCards;
     private List<Texture2D> _backgrounds;
     
@@ -64,6 +65,8 @@ public class GameManager : MonoBehaviour
 
     //Added Code
     public WalletData Wallet;
+
+    public Texture2D ActiveBackground { set => backgroundMaterial.mainTexture = value; }
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
