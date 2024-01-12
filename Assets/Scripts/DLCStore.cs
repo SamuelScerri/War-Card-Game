@@ -93,8 +93,11 @@ public class DLCStore : MonoBehaviour
 
     private void DownloadTexture(StorageReference reference, Texture2D texture, DLCItem item) {
         DownloadFile(reference, false, state => {
-            if (state.BytesTransferred != 0)
-                item.Progress = (int)(state.TotalByteCount / state.BytesTransferred);
+            if (state.BytesTransferred != 0) {
+                item.Progress = state.BytesTransferred / state.TotalByteCount;
+                print(state.BytesTransferred / state.TotalByteCount);
+            }
+                
         }, data => {
             item.Progress = 1;
             texture.LoadImage(File.ReadAllBytes(data));

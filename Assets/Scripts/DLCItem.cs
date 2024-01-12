@@ -17,22 +17,24 @@ public class DLCItem : MonoBehaviour
 	private Asset assetData;
 	public Action OnBuy;
 
-	public int Progress
+	public float Progress
 	{
 		set
 		{
-			progressBar.value = value;
-			
-			if (progressBar.value >= 1)
+			if (value >= 1)
 			{
 				progressBar.gameObject.SetActive(false);
 				itemImage.color = new Color(1, 1, 1, 1);
+
+				progressBar.value = value;
 			}
 				
 			else
 			{
 				progressBar.gameObject.SetActive(true);
 				itemImage.color = new Color(1, 1, 1, 0);
+
+				progressBar.value = value;
 			}
 				
 		}
@@ -54,7 +56,9 @@ public class DLCItem : MonoBehaviour
 
 	public void Interact()
 	{
-		if (assetData.BuyOrEquip())
+		if (assetData.BuyOrEquip()) {
+			//Progress = 0;
 			descriptionText.SetText("EQUIP");
+		}
 	}
 }
