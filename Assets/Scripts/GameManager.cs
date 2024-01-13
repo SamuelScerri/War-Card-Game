@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
+using UnityEditor.PackageManager;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public enum CardAnimation
 {
@@ -55,6 +56,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float animationDuration = 2f;
     [SerializeField] private float roundTransitionDuration = 2f;
     [SerializeField] private Material backgroundMaterial;
+
+    //Added Code
+    [SerializeField] private GameObject networkMessagePrefab;
+
     private Dictionary<string, GameObject> _playingCards;
     private List<Texture2D> _backgrounds;
     
@@ -78,7 +83,8 @@ public class GameManager : MonoBehaviour
     }
 
     //Added Code
-    private NetworkManager networkManager;
+    public NetworkManager NetworkManager { get; set; }
+    public NetworkMessage NetworkMessage { get; set; }
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
@@ -110,15 +116,15 @@ public class GameManager : MonoBehaviour
 
         //Added Code
         Wallet = new WalletData(1000);
-        networkManager = FindAnyObjectByType<NetworkManager>();
+        NetworkManager = FindAnyObjectByType<NetworkManager>();
     }
 
     private IEnumerator CheckPlayerCount() {
         while (true)
         {
-            if (networkManager.ConnectedClientsList.Count == 2)
+            if (NetworkManager.ConnectedClientsList.Count == 1)
             {
-                networkManager.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                NetworkManager.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
                 break;
             }
                 
@@ -136,25 +142,28 @@ public class GameManager : MonoBehaviour
                 //Change these for multiplayer
                 GameObject.Find("HostBtn").GetComponent<Button>().onClick.AddListener(() => {
                     //Added Code
-                    networkManager.StartHost();
-                    
+                    NetworkManager.StartHost();
                     StartCoroutine(CheckPlayerCount());
                 });
-                GameObject.Find("JoinBtn").GetComponent<Button>().onClick.AddListener(()=> {
-                    //Added Code
-                    networkManager.StartClient();
-
-                    //SceneManager.LoadSceneAsync("GameScene");
-                });
+                GameObject.Find("JoinBtn").GetComponent<Button>().onClick.AddListener(()=> NetworkManager.StartClient());
                 break;
             case "GameScene":
+                //Added Code
+                if (NetworkManager.IsHost)
+                {
+                    NetworkMessage = Instantiate(networkMessagePrefab).GetComponent<NetworkMessage>();
+                    NetworkMessage.GetComponent<NetworkObject>().Spawn();
+                }   
+
                 _playBtnP1 = GameObject.Find("PlayBtnP1").GetComponent<Button>();
                 _playBtnP2 = GameObject.Find("PlayBtnP2").GetComponent<Button>();
                 _p1 = new PlayerData(1,GameObject.Find("Player1").transform,GameObject.Find("P1Score").GetComponent<TMP_Text>(), new Card());
                 _p2 = new PlayerData(2, GameObject.Find("Player2").transform,GameObject.Find("P2Score").GetComponent<TMP_Text>(), new Card());
+
                 _playBtnP1.onClick.AddListener(() =>
                 {
                     _playBtnP1.enabled = false;
+                    //networkRPC.CallCoroutineClientRpc("RotateCard", _p1.PlayerId);
                     StartCoroutine(RotateCard(_p1));
                 });
                 _playBtnP2.onClick.AddListener(()=>
@@ -162,6 +171,7 @@ public class GameManager : MonoBehaviour
                     _playBtnP2.enabled = false;
                     StartCoroutine(RotateCard(_p2));
                 });
+
                 SpawnCards();
                 break;
             case "ScoreScene":

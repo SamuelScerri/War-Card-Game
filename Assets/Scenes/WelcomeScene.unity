@@ -279,6 +279,7 @@ MonoBehaviour:
   animationDuration: 2
   roundTransitionDuration: 2
   backgroundMaterial: {fileID: 2100000, guid: b2803157f955e57448ceb44537bdd223, type: 2}
+  networkMessagePrefab: {fileID: 1593107963685101873, guid: c7fc8c4975cf0814488636206f80ba6d, type: 3}
 --- !u!4 &124804485
 Transform:
   m_ObjectHideFlags: 0
@@ -917,7 +918,8 @@ MonoBehaviour:
     NetworkTransport: {fileID: 1264060826}
     PlayerPrefab: {fileID: 0}
     Prefabs:
-      NetworkPrefabsLists: []
+      NetworkPrefabsLists:
+      - {fileID: 11400000, guid: 0550bce5fd043584191cb896dbb1cffa, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
