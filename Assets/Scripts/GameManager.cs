@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviour
     //Added Code
     public NetworkManager NetworkManager { get; set; }
     public NetworkMessage NetworkMessage { get; set; }
+    private GameInfo gameInfo;
     
     private delegate void CardAnimationFinishedDelegate(PlayerData player);
     private event CardAnimationFinishedDelegate OnCardAnimationFinished;
@@ -146,6 +147,9 @@ public class GameManager : MonoBehaviour
     
         PlayerList.Add(_p1);
         PlayerList.Add(_p2);
+
+        if (NetworkManager.IsHost)
+            gameInfo = new GameInfo();
     }
     
     private void OnSceneLoaded(Scene scene,LoadSceneMode mode)
@@ -202,14 +206,20 @@ public class GameManager : MonoBehaviour
                 if (_p1.Score > _p2.Score)
                 {
                     result.text = "Player 1 Wins!";
+
+                    //Added Code
+                    if (gameInfo != null)
+                        gameInfo.SaveGameInformation(1, 2);
                 }
                 else
                 {
                     result.text = "Player 2 Wins!";
+
+                    //Added Code
+                    if (gameInfo != null)
+                        gameInfo.SaveGameInformation(2, 1);
                 }
 
-                //Destroy(NetworkManager.gameObject);
-                //Destroy(gameObject);
                 break;
             case "StoreScene":
                 break;

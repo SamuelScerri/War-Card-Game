@@ -9,6 +9,7 @@ public class NetworkMessage : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SpawnCardServerRpc(int id)
     {
+
         print("Spawning Cards Server RPC");
 
         //Clear And Spawn Player ID's Card
