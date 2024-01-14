@@ -61,7 +61,7 @@ public class DLCStore : MonoBehaviour
 
                 newAsset.OnBuy = delegate() {
                     CoinCounter = GameManager.Singleton.Wallet.Coins;
-                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image, newItem);
+                    DownloadTexture(storage.GetReference(itemNode.SelectSingleNode("backgroundImageURL").InnerText), newAsset.Image, newItem, true);
                 };
             }
         });
@@ -92,10 +92,13 @@ public class DLCStore : MonoBehaviour
             onComplete.Invoke(localUrl);
     }
 
-    private void DownloadTexture(StorageReference reference, Texture2D texture, DLCItem item) {
+    private void DownloadTexture(StorageReference reference, Texture2D texture, DLCItem item, bool doEffect = false) {
         DownloadFile(reference, false, state => item.Progress = (float)state.BytesTransferred / state.TotalByteCount, data => {
             item.Progress = 1;
             texture.LoadImage(File.ReadAllBytes(data));
+
+            if (doEffect)
+                item.StartCoroutine(item.FlashAnimation());
         });
     }
 

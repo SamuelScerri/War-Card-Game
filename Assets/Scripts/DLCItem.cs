@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,11 +55,28 @@ public class DLCItem : MonoBehaviour
 		}
 	}
 
+	//Special Effect
+	public IEnumerator FlashAnimation()
+	{
+		float time = 0;
+
+		while (time < 1)
+		{
+			time += Time.deltaTime;
+			itemImage.color = Color.Lerp(Color.red, Color.white, time);
+			itemImage.rectTransform.localScale = Vector3.one + Vector3.one * .25f * Mathf.Sin(Mathf.Lerp(0, Mathf.Deg2Rad*180, time));
+
+			yield return new WaitForEndOfFrame();
+		}
+	}
+
 	public void Interact()
 	{
 		if (assetData.BuyOrEquip()) {
 			GameManager.Singleton.ActiveBackground = assetData.Image;
 			descriptionText.SetText("EQUIP");
+
+			//StartCoroutine(FlashAnimation());
 		}
 	}
 }

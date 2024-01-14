@@ -80,6 +80,8 @@ public class GameManager : MonoBehaviour
     public Button PlayButton1 { get => _playBtnP1; }
     public Button PlayButton2 { get => _playBtnP2; }
 
+    private Texture2D _activeBackground;
+
     //Added Code
     public Texture2D ActiveBackground
     {
@@ -87,7 +89,11 @@ public class GameManager : MonoBehaviour
         {
             backgroundMaterial.mainTexture = value;
             backgroundMaterial.color = Color.white;
+
+            _activeBackground = value;
         }
+
+        get => _activeBackground;
     }
 
     //Added Code
