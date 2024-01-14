@@ -18,6 +18,33 @@ public class NetworkMessage : NetworkBehaviour
         else GiveControlClientRpc();
     }
 
+    [ServerRpc]
+    public void ChangeScoreServerRpc(int id)
+    {
+        print("Changing Score Server RPC");
+        ChangeScoreClientRpc(id);
+    }
+
+    [ClientRpc]
+    public void ChangeScoreClientRpc(int id)
+    {
+        GameManager.Singleton.PlayerList[id].PlayerScoreUI.text = $"P{GameManager.Singleton.PlayerList[id].PlayerId}: {GameManager.Singleton.IncrementScore(id)}";
+
+        //We Call The Transition Coroutine By The Client, To Ensure Everything Is Synchronized Correctly
+        if (!GameManager.Singleton.NetworkManager.IsHost)
+        {
+            if (GameManager.Singleton.PlayerList[0].Score == 5 || GameManager.Singleton.PlayerList[1].Score == 5)
+            {
+                print("Game Done");
+                //GameDoneServerRpc();
+                //SceneManager.LoadSceneAsync("ScoreScene");
+            }
+
+            else GameManager.Singleton.StartCoroutine(
+                GameManager.Singleton.TransitionNextRound(2));
+        }
+    }
+
     [ClientRpc]
     public void SpawnCardClientRpc(int playerId, int cardId)
     {
@@ -49,23 +76,31 @@ public class NetworkMessage : NetworkBehaviour
         //We Hide The Other Player's Button & Enable The Correct Button
         if (GameManager.Singleton.NetworkManager.IsHost)
         {
+            GameManager.Singleton.PlayButton1.gameObject.SetActive(true);
             GameManager.Singleton.PlayButton2.gameObject.SetActive(false);
             GameManager.Singleton.PlayButton1.onClick.AddListener(() =>
             {
                 GameManager.Singleton.PlayButton1.enabled = false;
+                GameManager.Singleton.PlayButton1.gameObject.SetActive(false);
                 RotateCardServerRpc(0);
             });
+
+            GameManager.Singleton.PlayButton1.enabled = true;
         }
 
         //Same Thing But For The Non-Host
         else
         {
             GameManager.Singleton.PlayButton1.gameObject.SetActive(false);
+            GameManager.Singleton.PlayButton2.gameObject.SetActive(true);
             GameManager.Singleton.PlayButton2.onClick.AddListener(() =>
             {
                 GameManager.Singleton.PlayButton2.enabled = false;
+                GameManager.Singleton.PlayButton2.gameObject.SetActive(false);
                 RotateCardServerRpc(1);
             });
+
+            GameManager.Singleton.PlayButton2.enabled = true;
         }
     }
 

@@ -188,6 +188,8 @@ public class GameManager : MonoBehaviour
                 SpawnCards();*/
                 break;
             case "ScoreScene":
+                //NetworkManager.Shutdown();
+
                 GameObject.Find("BackBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("WelcomeScene"));
                 TMP_Text result = GameObject.Find("Winner").GetComponent<TMP_Text>();
                 if (_p1.Score > _p2.Score)
@@ -253,21 +255,33 @@ public class GameManager : MonoBehaviour
 
     private void CardAnimationFinished(PlayerData player)
     {
-        if (_p1.Card.AnimationState == CardAnimation.Revealed && _p2.Card.AnimationState == CardAnimation.Revealed)
+        //Added Code
+        //Only The Host Will Check When Everything Is Ready
+        if (NetworkManager.IsHost)
         {
-            if (_p1.Card.CardValue > _p2.Card.CardValue)
+            if (_p1.Card.AnimationState == CardAnimation.Revealed && _p2.Card.AnimationState == CardAnimation.Revealed)
             {
-                Debug.Log("Player 1 wins!");
-                OnScoreChanged?.Invoke(_p1);
-            }
-            else
-            {
-                Debug.Log("Player 2 wins!");
-                OnScoreChanged?.Invoke(_p2);
+                if (_p1.Card.CardValue > _p2.Card.CardValue)
+                {
+                    Debug.Log("Player 1 wins!");
+                    //OnScoreChanged?.Invoke(_p1);
+
+                    //We Inform The Server To Change The Player's Score
+                    NetworkMessage.ChangeScoreServerRpc(0);
+                }
+                else
+                {
+                    Debug.Log("Player 2 wins!");
+                    //OnScoreChanged?.Invoke(_p2);
+
+                    //The Same For The Other Player
+                    NetworkMessage.ChangeScoreServerRpc(1);
+                }
             }
         }
     }
 
+    //Refer To ChangeScoreServerRpc
     private void ScoreChanged(PlayerData player)
     {
         player.PlayerScoreUI.text = $"P{player.PlayerId}: {IncrementScore(player.PlayerId)}";
@@ -294,7 +308,7 @@ public class GameManager : MonoBehaviour
         if (playerId == 2) _p2.Card.AnimationState = state;
     }
     
-    private int IncrementScore(int playerId)
+    public int IncrementScore(int playerId)
     {
         if (playerId == 1)
         {
@@ -323,13 +337,13 @@ public class GameManager : MonoBehaviour
         OnCardAnimationFinished?.Invoke(p);
     }
 
-    IEnumerator TransitionNextRound(float duration)
+    public IEnumerator TransitionNextRound(float duration)
     {
         yield return new WaitForSeconds(duration);
         NetworkMessage.SpawnCardServerRpc(0);
 
         //SpawnCards();
-        _playBtnP1.enabled = true;
-        _playBtnP2.enabled = true;
+        //_playBtnP1.enabled = true;
+        //_playBtnP2.enabled = true;
     }
 }
