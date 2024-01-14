@@ -134,20 +134,6 @@ public class GameManager : MonoBehaviour
         PlayerList = new List<PlayerData>();
     }
 
-    private IEnumerator CheckPlayerCount() {
-        while (true)
-        {
-            if (NetworkManager.ConnectedClientsList.Count == 1)
-            {
-                NetworkManager.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-                break;
-            }
-                
-
-            yield return new WaitForEndOfFrame();
-        }
-    }
-
     //Added Code
     public void InitializeElements()
     {
@@ -172,7 +158,7 @@ public class GameManager : MonoBehaviour
                 GameObject.Find("HostBtn").GetComponent<Button>().onClick.AddListener(() => {
                     //Added Code
                     NetworkManager.StartHost();
-                    StartCoroutine(CheckPlayerCount());
+                    NetworkManager.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
                 });
                 GameObject.Find("JoinBtn").GetComponent<Button>().onClick.AddListener(()=> NetworkManager.StartClient());
                 break;
