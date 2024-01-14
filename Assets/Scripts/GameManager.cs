@@ -32,7 +32,7 @@ public struct Card
     }
 }
 
-public struct PlayerData
+public class PlayerData
 {
     public int PlayerId;
     public Transform PlayerGameObject;
@@ -61,6 +61,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject networkMessagePrefab;
 
     private Dictionary<string, GameObject> _playingCards;
+
+    //Added Code
+    public Dictionary<string, GameObject> PlayingCards { get => _playingCards; }
+
     private List<Texture2D> _backgrounds;
     
     private PlayerData _p1;
@@ -71,6 +75,11 @@ public class GameManager : MonoBehaviour
 
     //Added Code
     public WalletData Wallet;
+
+    public List<PlayerData> PlayerList;
+
+    //public PlayerData P1 { get => _p1; set => _p1 = value; }
+    //public PlayerData P2 { get => _p2; set => _p2 = value; }
 
     //Added Code
     public Texture2D ActiveBackground
@@ -117,6 +126,7 @@ public class GameManager : MonoBehaviour
         //Added Code
         Wallet = new WalletData(1000);
         NetworkManager = FindAnyObjectByType<NetworkManager>();
+        PlayerList = new List<PlayerData>();
     }
 
     private IEnumerator CheckPlayerCount() {
@@ -160,6 +170,9 @@ public class GameManager : MonoBehaviour
                 _p1 = new PlayerData(1,GameObject.Find("Player1").transform,GameObject.Find("P1Score").GetComponent<TMP_Text>(), new Card());
                 _p2 = new PlayerData(2, GameObject.Find("Player2").transform,GameObject.Find("P2Score").GetComponent<TMP_Text>(), new Card());
 
+                PlayerList.Add(_p1);
+                PlayerList.Add(_p2);
+
                 _playBtnP1.onClick.AddListener(() =>
                 {
                     _playBtnP1.enabled = false;
@@ -172,7 +185,8 @@ public class GameManager : MonoBehaviour
                     StartCoroutine(RotateCard(_p2));
                 });
 
-                SpawnCards();
+                //Refer To Start() Method Of Network Message Class
+                //SpawnCards();
                 break;
             case "ScoreScene":
                 GameObject.Find("BackBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("WelcomeScene"));
