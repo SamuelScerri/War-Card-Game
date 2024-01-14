@@ -6,34 +6,29 @@ using UnityEngine;
 public class NetworkMessage : NetworkBehaviour
 {
     [ServerRpc(RequireOwnership = false)]
-    public void SpawnCardsServerRpc()
+    public void SpawnCardServerRpc(int id)
     {
-        print("Spawning Cards");
+        print("Spawning Cards Server RPC");
 
-        //Clear And Spawn Player 1's Card
-        DestroyCardClientRpc(0);
-        CreateCardClientRpc(0, UnityEngine.Random.Range(0, GameManager.Singleton.PlayingCards.Count));
+        //Clear And Spawn Player ID's Card
+        if (id < GameManager.Singleton.PlayerList.Count)
+            SpawnCardClientRpc(id, UnityEngine.Random.Range(0, GameManager.Singleton.PlayingCards.Count));
     
-        //Clear And Spawn Player 2's Card
-        DestroyCardClientRpc(1);
-        CreateCardClientRpc(1, UnityEngine.Random.Range(0, GameManager.Singleton.PlayingCards.Count));
+        //If All The Player Cards Are Initialized, Then We Can Start Giving Control To The Users
+        else GiveControlClientRpc();
     }
 
     [ClientRpc]
-    public void DestroyCardClientRpc(int id)
+    public void SpawnCardClientRpc(int playerId, int cardId)
     {
-        print("Destroying Player ID: " + id + "'s Card");
+        print("Destroying Player ID: " + playerId + "'s Card");
 
-        if (GameManager.Singleton.PlayerList[id].Card.CardGameObject != null)
+        if (GameManager.Singleton.PlayerList[playerId].Card.CardGameObject != null)
         {
-            Destroy(GameManager.Singleton.PlayerList[id].Card.CardGameObject);
-            GameManager.Singleton.PlayerList[id].Card = new Card();
+            Destroy(GameManager.Singleton.PlayerList[playerId].Card.CardGameObject);
+            GameManager.Singleton.PlayerList[playerId].Card = new Card();
         }
-    }
 
-    [ClientRpc]
-    public void CreateCardClientRpc(int playerId, int cardId)
-    {
         print("Creating Player ID: " + playerId + "'s Card");
 
         Card chosenCard = new Card(GameManager.Singleton.PlayingCards.ElementAt(cardId).Key, GameManager.Singleton.PlayingCards.ElementAt(cardId).Value);
@@ -42,12 +37,36 @@ public class NetworkMessage : NetworkBehaviour
 
         GameManager.Singleton.PlayerList[playerId].Card = new Card(chosenCard.CardName, card);
         int.TryParse(chosenCard.CardName.Substring(chosenCard.CardName.Length - 2), out GameManager.Singleton.PlayerList[playerId].Card.CardValue);
+    
+        //If The Final Card Is Spawned, Then We Inform The Server To Spawn The Next Player's Card
+        if (!GameManager.Singleton.NetworkManager.IsHost)
+            SpawnCardServerRpc(playerId + 1);
     }
 
     [ClientRpc]
-    public void SpawnCardsClientRpc()
+    public void GiveControlClientRpc()
     {
+        //We Hide The Other Player's Button & Enable The Correct Button
+        if (GameManager.Singleton.NetworkManager.IsHost)
+        {
+            GameManager.Singleton.PlayButton2.gameObject.SetActive(false);
+            GameManager.Singleton.PlayButton1.onClick.AddListener(() =>
+            {
+                GameManager.Singleton.PlayButton1.enabled = false;
+                print("Flip Card");
+            });
+        }
 
+        //Same Thing But For The Non-Host
+        else
+        {
+            GameManager.Singleton.PlayButton1.gameObject.SetActive(false);
+            GameManager.Singleton.PlayButton2.onClick.AddListener(() =>
+            {
+                GameManager.Singleton.PlayButton2.enabled = false;
+                print("Flip Card");
+            });
+        }
     }
 
     public void Start()
@@ -55,6 +74,6 @@ public class NetworkMessage : NetworkBehaviour
         GameManager.Singleton.NetworkMessage = this;
 
         if (!GameManager.Singleton.NetworkManager.IsHost)
-            SpawnCardsServerRpc();
+            SpawnCardServerRpc(0);
     }
 }

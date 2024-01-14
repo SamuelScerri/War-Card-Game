@@ -75,11 +75,9 @@ public class GameManager : MonoBehaviour
 
     //Added Code
     public WalletData Wallet;
-
     public List<PlayerData> PlayerList;
-
-    //public PlayerData P1 { get => _p1; set => _p1 = value; }
-    //public PlayerData P2 { get => _p2; set => _p2 = value; }
+    public Button PlayButton1 { get => _playBtnP1; }
+    public Button PlayButton2 { get => _playBtnP2; }
 
     //Added Code
     public Texture2D ActiveBackground
@@ -173,7 +171,9 @@ public class GameManager : MonoBehaviour
                 PlayerList.Add(_p1);
                 PlayerList.Add(_p2);
 
-                _playBtnP1.onClick.AddListener(() =>
+                //Refer To Start() Method Of Network Message Class
+
+                /*_playBtnP1.onClick.AddListener(() =>
                 {
                     _playBtnP1.enabled = false;
                     //networkRPC.CallCoroutineClientRpc("RotateCard", _p1.PlayerId);
@@ -184,9 +184,8 @@ public class GameManager : MonoBehaviour
                     _playBtnP2.enabled = false;
                     StartCoroutine(RotateCard(_p2));
                 });
-
-                //Refer To Start() Method Of Network Message Class
-                //SpawnCards();
+                
+                SpawnCards();*/
                 break;
             case "ScoreScene":
                 GameObject.Find("BackBtn").GetComponent<Button>().onClick.AddListener(()=>SceneManager.LoadSceneAsync("WelcomeScene"));
