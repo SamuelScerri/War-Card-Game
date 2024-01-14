@@ -4,7 +4,11 @@ public struct WalletData
 {
     private int defaultAmount;
 
-    public int ID { get => PlayerPrefs.GetInt("ID", Random.Range(0, 9999)); }
+    public int ID
+    {
+        get => PlayerPrefs.GetInt("Player ID", Random.Range(0, 9999));
+        set => PlayerPrefs.SetInt("Player ID", value);
+    }
 
     public int Coins
     {
@@ -15,5 +19,6 @@ public struct WalletData
     public WalletData(int amount)
     {
         defaultAmount = amount;
+        ID = ID;
     }
 }
