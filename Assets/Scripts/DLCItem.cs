@@ -58,6 +58,7 @@ public class DLCItem : MonoBehaviour
 	{
 		if (assetData.BuyOrEquip()) {
 			GameManager.Singleton.ActiveBackground = assetData.Image;
+			descriptionText.SetText("EQUIP");
 		}
 	}
 }
