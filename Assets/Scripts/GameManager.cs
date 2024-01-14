@@ -59,6 +59,7 @@ public class GameManager : MonoBehaviour
 
     //Added Code
     [SerializeField] private GameObject networkMessagePrefab;
+    [SerializeField] private GameObject networkManagerPrefab;
 
     private Dictionary<string, GameObject> _playingCards;
 
@@ -108,8 +109,12 @@ public class GameManager : MonoBehaviour
             {
                 Destroy(value.gameObject);
             }
-            _instance = value;
-            DontDestroyOnLoad(value);
+            //Added Code
+            else
+            {
+                _instance = value;
+                DontDestroyOnLoad(value);
+            }
         }
     }
     private void Awake()
@@ -120,10 +125,12 @@ public class GameManager : MonoBehaviour
         OnScoreChanged += ScoreChanged;
         _playingCards = _playingCardsSO.PlayingCardsDict;
         _backgrounds = _playingCardsSO.Backgrounds;
+    }
 
-        //Added Code
+    private void Start()
+    {
+        NetworkManager = Instantiate(networkManagerPrefab).GetComponent<NetworkManager>();
         Wallet = new WalletData(1000);
-        NetworkManager = FindAnyObjectByType<NetworkManager>();
         PlayerList = new List<PlayerData>();
     }
 
@@ -214,6 +221,9 @@ public class GameManager : MonoBehaviour
                 {
                     result.text = "Player 2 Wins!";
                 }
+
+                //Destroy(NetworkManager.gameObject);
+                //Destroy(gameObject);
                 break;
             case "StoreScene":
                 break;

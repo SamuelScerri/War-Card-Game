@@ -44,7 +44,7 @@ public class NetworkMessage : NetworkBehaviour
         //We Call The Transition Coroutine By The Client, To Ensure Everything Is Synchronized Correctly
         if (!GameManager.Singleton.NetworkManager.IsHost)
         {
-            if (GameManager.Singleton.PlayerList[0].Score == 5 || GameManager.Singleton.PlayerList[1].Score == 5)
+            if (GameManager.Singleton.PlayerList[0].Score == 2 || GameManager.Singleton.PlayerList[1].Score == 2)
             {
                 SceneManager.LoadSceneAsync("ScoreScene");
 
