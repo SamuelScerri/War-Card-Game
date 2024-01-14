@@ -140,6 +140,20 @@ public class GameManager : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
     }
+
+    //Added Code
+    public void InitializeElements()
+    {
+        PlayerList.Clear();
+
+        _playBtnP1 = GameObject.Find("PlayBtnP1").GetComponent<Button>();
+        _playBtnP2 = GameObject.Find("PlayBtnP2").GetComponent<Button>();
+        _p1 = new PlayerData(1,GameObject.Find("Player1").transform,GameObject.Find("P1Score").GetComponent<TMP_Text>(), new Card());
+        _p2 = new PlayerData(2, GameObject.Find("Player2").transform,GameObject.Find("P2Score").GetComponent<TMP_Text>(), new Card());
+    
+        PlayerList.Add(_p1);
+        PlayerList.Add(_p2);
+    }
     
     private void OnSceneLoaded(Scene scene,LoadSceneMode mode)
     {
@@ -163,13 +177,13 @@ public class GameManager : MonoBehaviour
                     NetworkMessage.GetComponent<NetworkObject>().Spawn();
                 }   
 
-                _playBtnP1 = GameObject.Find("PlayBtnP1").GetComponent<Button>();
+                /*_playBtnP1 = GameObject.Find("PlayBtnP1").GetComponent<Button>();
                 _playBtnP2 = GameObject.Find("PlayBtnP2").GetComponent<Button>();
                 _p1 = new PlayerData(1,GameObject.Find("Player1").transform,GameObject.Find("P1Score").GetComponent<TMP_Text>(), new Card());
                 _p2 = new PlayerData(2, GameObject.Find("Player2").transform,GameObject.Find("P2Score").GetComponent<TMP_Text>(), new Card());
 
                 PlayerList.Add(_p1);
-                PlayerList.Add(_p2);
+                PlayerList.Add(_p2);*/
 
                 //Refer To Start() Method Of Network Message Class
 
@@ -257,26 +271,23 @@ public class GameManager : MonoBehaviour
     {
         //Added Code
         //Only The Host Will Check When Everything Is Ready
-        if (NetworkManager.IsHost)
+        if (_p1.Card.AnimationState == CardAnimation.Revealed && _p2.Card.AnimationState == CardAnimation.Revealed)
         {
-            if (_p1.Card.AnimationState == CardAnimation.Revealed && _p2.Card.AnimationState == CardAnimation.Revealed)
+            if (_p1.Card.CardValue > _p2.Card.CardValue)
             {
-                if (_p1.Card.CardValue > _p2.Card.CardValue)
-                {
-                    Debug.Log("Player 1 wins!");
-                    //OnScoreChanged?.Invoke(_p1);
+                Debug.Log("Player 1 wins!");
+                //OnScoreChanged?.Invoke(_p1);
 
-                    //We Inform The Server To Change The Player's Score
-                    NetworkMessage.ChangeScoreServerRpc(0);
-                }
-                else
-                {
-                    Debug.Log("Player 2 wins!");
-                    //OnScoreChanged?.Invoke(_p2);
+                //We Inform The Server To Change The Player's Score
+                NetworkMessage.ChangeScoreServerRpc(0);
+            }
+            else
+            {
+                Debug.Log("Player 2 wins!");
+                //OnScoreChanged?.Invoke(_p2);
 
-                    //The Same For The Other Player
-                    NetworkMessage.ChangeScoreServerRpc(1);
-                }
+                //The Same For The Other Player
+                NetworkMessage.ChangeScoreServerRpc(1);
             }
         }
     }
@@ -334,7 +345,9 @@ public class GameManager : MonoBehaviour
 
         p.Card.CardGameObject.transform.rotation = endRotation; // Ensure the rotation is set to the final value
         UpdateRotationState(p.PlayerId, CardAnimation.Revealed);
-        OnCardAnimationFinished?.Invoke(p);
+
+        if (NetworkManager.IsHost)
+            OnCardAnimationFinished?.Invoke(p);
     }
 
     public IEnumerator TransitionNextRound(float duration)

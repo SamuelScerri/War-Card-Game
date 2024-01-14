@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NetworkMessage : NetworkBehaviour
 {
@@ -25,9 +26,19 @@ public class NetworkMessage : NetworkBehaviour
         ChangeScoreClientRpc(id);
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    public void GameDoneServerRpc()
+    {
+        SceneManager.LoadSceneAsync("ScoreScene");
+
+        GetComponent<NetworkObject>().Despawn();
+        GameManager.Singleton.NetworkManager.Shutdown();
+    }
+
     [ClientRpc]
     public void ChangeScoreClientRpc(int id)
     {
+        GameManager.Singleton.StopAllCoroutines();
         GameManager.Singleton.PlayerList[id].PlayerScoreUI.text = $"P{GameManager.Singleton.PlayerList[id].PlayerId}: {GameManager.Singleton.IncrementScore(id)}";
 
         //We Call The Transition Coroutine By The Client, To Ensure Everything Is Synchronized Correctly
@@ -35,9 +46,10 @@ public class NetworkMessage : NetworkBehaviour
         {
             if (GameManager.Singleton.PlayerList[0].Score == 5 || GameManager.Singleton.PlayerList[1].Score == 5)
             {
-                print("Game Done");
-                //GameDoneServerRpc();
-                //SceneManager.LoadSceneAsync("ScoreScene");
+                SceneManager.LoadSceneAsync("ScoreScene");
+
+                GameDoneServerRpc();
+                GameManager.Singleton.NetworkManager.Shutdown();
             }
 
             else GameManager.Singleton.StartCoroutine(
@@ -83,6 +95,8 @@ public class NetworkMessage : NetworkBehaviour
                 GameManager.Singleton.PlayButton1.enabled = false;
                 GameManager.Singleton.PlayButton1.gameObject.SetActive(false);
                 RotateCardServerRpc(0);
+
+                GameManager.Singleton.PlayButton1.onClick.RemoveAllListeners();
             });
 
             GameManager.Singleton.PlayButton1.enabled = true;
@@ -98,6 +112,8 @@ public class NetworkMessage : NetworkBehaviour
                 GameManager.Singleton.PlayButton2.enabled = false;
                 GameManager.Singleton.PlayButton2.gameObject.SetActive(false);
                 RotateCardServerRpc(1);
+
+                GameManager.Singleton.PlayButton2.onClick.RemoveAllListeners();
             });
 
             GameManager.Singleton.PlayButton2.enabled = true;
@@ -120,6 +136,7 @@ public class NetworkMessage : NetworkBehaviour
 
     public void Start()
     {
+        GameManager.Singleton.InitializeElements();
         GameManager.Singleton.NetworkMessage = this;
 
         if (!GameManager.Singleton.NetworkManager.IsHost)
