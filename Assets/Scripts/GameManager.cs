@@ -305,7 +305,7 @@ public class GameManager : MonoBehaviour
         return _p2.Score;
     }
     
-    IEnumerator RotateCard(PlayerData p)
+    public IEnumerator RotateCard(PlayerData p)
     {
         float time = 0;
         Quaternion startRotation = Quaternion.Euler(-90, 0, 180);
@@ -326,7 +326,9 @@ public class GameManager : MonoBehaviour
     IEnumerator TransitionNextRound(float duration)
     {
         yield return new WaitForSeconds(duration);
-        SpawnCards();
+        NetworkMessage.SpawnCardServerRpc(0);
+
+        //SpawnCards();
         _playBtnP1.enabled = true;
         _playBtnP2.enabled = true;
     }

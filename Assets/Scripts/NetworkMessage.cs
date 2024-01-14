@@ -53,7 +53,7 @@ public class NetworkMessage : NetworkBehaviour
             GameManager.Singleton.PlayButton1.onClick.AddListener(() =>
             {
                 GameManager.Singleton.PlayButton1.enabled = false;
-                print("Flip Card");
+                RotateCardServerRpc(0);
             });
         }
 
@@ -64,9 +64,23 @@ public class NetworkMessage : NetworkBehaviour
             GameManager.Singleton.PlayButton2.onClick.AddListener(() =>
             {
                 GameManager.Singleton.PlayButton2.enabled = false;
-                print("Flip Card");
+                RotateCardServerRpc(1);
             });
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void RotateCardServerRpc(int id)
+    {
+        RotateCardClientRpc(id);
+    }
+
+    [ClientRpc]
+    public void RotateCardClientRpc(int id)
+    {
+        //We Simply Call The Coroutine To Rotate The Card
+        GameManager.Singleton.StartCoroutine(
+            GameManager.Singleton.RotateCard(GameManager.Singleton.PlayerList[id]));
     }
 
     public void Start()
